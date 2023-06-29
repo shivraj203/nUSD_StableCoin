@@ -1,0 +1,185 @@
+      <!DOCTYPE html>
+<html>
+  <head>
+    <title>nUSD Stablecoin</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
+  </head>
+  <body>
+    <h1>nUSD Stablecoin</h1>
+    <p>Total nUSD Supply: <span id="totalSupply"></span></p>
+    <input type="number" id="ethAmount" placeholder="ETH amount" step="0.01" />
+    <button onclick="deposit()">Deposit</button>
+    <button onclick="redeem()">Redeem</button>
+
+    <script>
+      // Contract address and ABI
+      const contractAddress = '0xC75E599A9Ca772296E55b1bC1ddDbb482217f850';
+        const contractABI = [
+        // Contract ABI here
+        {
+            "inputs": [
+                {
+                "internalType": "address",
+                "name": "_priceFeedAddress",
+                "type": "address"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+            },
+            {
+            "inputs": [
+                {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+                }
+            ],
+            "name": "balances",
+            "outputs": [
+                {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+            },
+            {
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [
+                {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+            },
+            {
+            "inputs": [],
+            "name": "name",
+            "outputs": [
+                {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+            },
+            {
+            "inputs": [],
+            "name": "symbol",
+            "outputs": [
+                {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+            },
+            {
+            "inputs": [],
+            "name": "totalSupply",
+            "outputs": [
+                {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+            },
+            {
+            "inputs": [],
+            "name": "deposit",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function",
+            "payable": true
+            },
+            {
+            "inputs": [],
+            "name": "redeem",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+            },
+            {
+            "inputs": [],
+            "name": "getPrice",
+            "outputs": [
+                {
+                "internalType": "int256",
+                "name": "",
+                "type": "int256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+        }
+        ];
+
+      // Web3 initialization
+      if (typeof web3 !== 'undefined') {
+        web3 = new Web3(web3.currentProvider);
+      } else {
+        web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545')); // Replace with the desired Ethereum node URL
+      }
+
+      // Contract instance
+      const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+      // Retrieve and display the total nUSD supply
+      async function getTotalSupply() {
+        const totalSupply = await contract.methods.totalSupply().call();
+        document.getElementById('totalSupply').textContent = totalSupply;
+      }
+
+      // Deposit ETH and receive nUSD
+      async function deposit() {
+        const ethAmount = document.getElementById('ethAmount').value;
+        const accounts = await web3.eth.requestAccounts();
+
+        await contract.methods.deposit().send({
+          from: accounts[0],
+          value: web3.utils.toWei(ethAmount),
+        });
+
+        // Update total supply
+        await getTotalSupply();
+      }
+
+      // Redeem nUSD and receive ETH
+      async function redeem() {
+        const accounts = await web3.eth.requestAccounts();
+
+        await contract.methods.redeem().send({
+          from: accounts[0],
+        });
+
+        // Update total supply
+        await getTotalSupply();
+      }
+
+      // Get the initial total supply on page load
+      window.onload = async () => {
+        await getTotalSupply();
+      };
+    </script>
+  </body>
+</html>
